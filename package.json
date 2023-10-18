@@ -1,13 +1,13 @@
 {
-  "name": "timer",
-  "displayName": "Timer",
-  "description": "An extension to track down your time spent coding.",
-  "version": "2.0.0",
-  "publisher": "dharmey",
+  "name": "vscodetimer",
+  "displayName": "Code Timer",
+  "description": "An extension to track down your time spent coding. Forked from dharmey",
+  "version": "1.0.0",
+  "publisher": "vitouwu",
   "icon": "icon.png",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Dharmey747/vscode-timer.git"
+    "url": "git+https://github.com/vitouwu/vscode-timer.git"
   },
   "engines": {
     "vscode": "^1.59.0"
@@ -16,20 +16,30 @@
     "Other"
   ],
   "activationEvents": [
-    "*",
-    "onCommand:timer.resetTimer",
-    "onCommand:timer.viewAnalytics"
+    "onStartupFinished"
   ],
   "main": "./extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "timer.resetTimer",
+        "command": "timer.resetAndSave",
+        "title": "Reset Timer and Save"
+      },
+      {
+        "command": "timer.reset",
         "title": "Reset Timer"
       },
       {
-        "command": "timer.viewAnalytics",
-        "title": "View Analytics"
+        "command": "timer.stop",
+        "title": "Stop Timer"
+      },
+      {
+        "command": "timer.start",
+        "title": "Start Timer"
+      },
+      {
+        "command": "timer.save",
+        "title": "Save actual time"
       }
     ]
   },
@@ -39,14 +49,10 @@
     "test": "node ./test/runTest.js"
   },
   "devDependencies": {
-    "@types/glob": "^7.1.3",
-    "@types/mocha": "^8.2.2",
     "@types/node": "14.x",
     "@types/vscode": "^1.59.0",
     "eslint": "^7.27.0",
-    "glob": "^7.1.7",
-    "mocha": "^8.4.0",
-    "typescript": "^4.3.2",
+    "prettier": "^3.0.3",
     "vscode-test": "^1.5.2"
   }
 }

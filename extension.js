@@ -1,43 +1,67 @@
-const vscode = require('vscode');
-const Timer = require('./timer.js');
-const stats = require('./stats.js');
-var sessions = require('./sessions.json');
+const vscode = require("vscode");
+const timer = require("./src/timer.js");
+const fs = require("fs");
 
 /**
  * @param {vscode.ExtensionContext} context
  */
-
-
 function activate(context) {
-	const statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
-	const time = new Timer(statusBar);
+  const statusBar = vscode.window.createStatusBarItem(
+    vscode.StatusBarAlignment.Right,
+    100,
+  );
 
+  timer.bar = statusBar;
+  timer.start();
 
-	let resetTime = vscode.commands.registerCommand('timer.resetTimer', function () {
-		time.second = 0
-		time.minute = 0
-		time.hour = 0
-		vscode.window.showInformationMessage('Successfully Reset Timer!');
-	});
+  const resetAndSave = vscode.commands.registerCommand(
+    "timer.resetAndSave",
+    () => {
+      timer.stop();
+      timer.write();
+      timer.start();
+      vscode.window.showInformationMessage(
+        "Timer saved and restarted sucessfully",
+      );
+    },
+  );
 
-	let statsPage = vscode.commands.registerCommand('timer.viewAnalytics', function () {
-		const panel = vscode.window.createWebviewPanel('stats', 'Analytics', vscode.ViewColumn.One, {enableScripts: true});
-		panel.webview.html = stats.renderAnalytics();
-		panel.webview.postMessage(sessions);
-	});
+  const save = vscode.commands.registerCommand("timer.save", () => {
+    timer.write();
+    vscode.window.showInformationMessage("Timer saved successfully");
+  });
 
-	statusBar.command = "timer.viewAnalytics"
+  const reset = vscode.commands.registerCommand("timer.reset", () => {
+    timer.restart();
+    vscode.window.showInformationMessage("Timer restarted sucessfully");
+  });
 
+  const start = vscode.commands.registerCommand("timer.start", () => {
+    if (timer.isRunning) {
+      return vscode.window.showWarningMessage("Timer is already running");
+    }
 
-	context.subscriptions.push(statusBar);
-	context.subscriptions.push(resetTime);
-	context.subscriptions.push(statsPage);
-};
+    timer.start();
+    vscode.window.showInformationMessage("Timer started sucessfully");
+  });
 
+  const stop = vscode.commands.registerCommand("timer.stop", () => {
+    timer.stop();
+    vscode.window.showInformationMessage("Timer stopped sucessfully");
+  });
 
-function deactivate() {}
+  context.subscriptions.push(resetAndSave);
+  context.subscriptions.push(reset);
+  context.subscriptions.push(stop);
+  context.subscriptions.push(start);
+  context.subscriptions.push(save);
+}
+
+function deactivate() {
+  timer.stop({ save: true });
+}
 
 module.exports = {
-	activate,
-	deactivate
-}
+  activate,
+  deactivate,
+};
