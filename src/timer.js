@@ -10,6 +10,7 @@ const STATES = {
 class Timer {
   #bar;
   #state;
+  #seconds;
 
   constructor() {
     /**
@@ -25,6 +26,7 @@ class Timer {
      */
     this.startDate = undefined;
 
+    this.#seconds = 0;
     this.#state = STATES.idle;
     this.id = this.generateId();
   }
@@ -37,15 +39,15 @@ class Timer {
     return this.#bar;
   }
 
-  get isRunning() {
-    return this.#state === STATES.running;
-  }
-
   /**
    * @param {import("vscode").StatusBarItem} bar
    */
   set bar(bar) {
     this.#bar = bar;
+  }
+
+  get isRunning() {
+    return this.#state === STATES.running;
   }
 
   generateId() {
@@ -60,9 +62,18 @@ class Timer {
   write() {
     const data =
       `Started At: ${this.startDate.toLocaleDateString("en-US")}\n` +
-      `Duration: ${this.elapsed().time}`;
+      `Duration: ${this.elapsed().formatted}`;
 
     fs.writeFileSync(`${__dirname}/sessions/${this.id}.log`, data);
+  }
+
+  continue() {
+    if (this.#state === STATES.running) {
+      throw new Error("Timer is already running");
+    }
+
+    this.#state = STATES.running;
+    this.loop();
   }
 
   start() {
@@ -70,10 +81,8 @@ class Timer {
       throw new Error("Timer is already running");
     }
     
-    if (this.#state !== STATES.stop) {
       this.startDate = new Date();
-    }
-
+    this.#seconds = 0;
     this.#state = STATES.running;
     this.loop();
   }
@@ -88,6 +97,8 @@ class Timer {
       this.start();
       return;
     }
+
+    this.#seconds += 1;
     this.refreshBar();
     setTimeout(() => this.loop(), 1000).unref();
   }
@@ -97,26 +108,26 @@ class Timer {
   }
 
   elapsed() {
-    const _seconds = Math.floor((Date.now() - this.startDate) / 1000);
-
-    const seconds = `${_seconds % 60}`.padStart(2, "0");
-    const minutes = `${Math.floor(_seconds / 60) % 60}`.padStart(2, "0");
-    const hours = `${Math.floor(_seconds / 3600)}`.padStart(2, "0");
+    const seconds = `${this.#seconds % 60}`.padStart(2, "0");
+    const minutes = `${Math.floor(this.#seconds / 60) % 60}`.padStart(2, "0");
+    const hours = `${Math.floor(this.#seconds / 3600)}`.padStart(2, "0");
 
     return {
-      time: `${hours}:${minutes}:${seconds}`,
-      shouldWrite: seconds === 59,
+      formatted: `${hours}:${minutes}:${seconds}`,
+      seconds,
+      minutes,
+      hours,
     };
   }
 
   refreshBar() {
-    const { time, shouldWrite } = this.elapsed();
+    const { formatted, seconds } = this.elapsed();
 
-    this.bar.text = `${time} ${
+    this.bar.text = `${formatted} ${
       this.#state === STATES.stop ? "Stopped" : "Elapsed"
     }`;
     this.bar.show();
-    if (shouldWrite) {
+    if (seconds === 59) {
       this.write();
     }
   }

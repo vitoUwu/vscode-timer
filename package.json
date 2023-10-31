@@ -40,6 +40,10 @@
       {
         "command": "timer.save",
         "title": "Save actual time"
+      },
+      {
+        "command": "timer.continue",
+        "title": "Continue Timer"
       }
     ]
   },

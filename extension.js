@@ -26,6 +26,11 @@ function activate(context) {
     },
   );
 
+  const _continue = vscode.commands.registerCommand("timer.continue", () => {
+    timer.continue();
+    vscode.window.showInformationMessage("Timer is running again");
+  });
+
   const save = vscode.commands.registerCommand("timer.save", () => {
     timer.write();
     vscode.window.showInformationMessage("Timer saved successfully");
@@ -50,6 +55,7 @@ function activate(context) {
     vscode.window.showInformationMessage("Timer stopped sucessfully");
   });
 
+  context.subscriptions.push(_continue);
   context.subscriptions.push(resetAndSave);
   context.subscriptions.push(reset);
   context.subscriptions.push(stop);
