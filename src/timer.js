@@ -69,10 +69,12 @@ class Timer {
     if (this.#state === STATES.running) {
       throw new Error("Timer is already running");
     }
-    this.#state = STATES.running;
+    
     if (this.#state !== STATES.stop) {
       this.startDate = new Date();
     }
+
+    this.#state = STATES.running;
     this.loop();
   }
 
