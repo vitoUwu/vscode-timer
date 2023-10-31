@@ -55,6 +55,7 @@ class Timer {
   }
 
   stop() {
+    this.bar.command = "timer.continue";
     this.#state = STATES.stop;
     this.refreshBar();
   }
@@ -73,6 +74,7 @@ class Timer {
     }
 
     this.#state = STATES.running;
+    this.bar.command = "timer.stop";
     this.loop();
   }
 
@@ -80,10 +82,11 @@ class Timer {
     if (this.#state === STATES.running) {
       throw new Error("Timer is already running");
     }
-    
-      this.startDate = new Date();
+
+    this.startDate = new Date();
     this.#seconds = 0;
     this.#state = STATES.running;
+    this.bar.command = "timer.stop";
     this.loop();
   }
 
