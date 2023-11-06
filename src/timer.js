@@ -1,4 +1,5 @@
 const fs = require("fs");
+const { ThemeColor } = require("vscode");
 
 const STATES = {
   idle: 0,
@@ -55,7 +56,6 @@ class Timer {
   }
 
   stop() {
-    this.bar.command = "timer.continue";
     this.#state = STATES.stop;
     this.refreshBar();
   }
@@ -86,7 +86,6 @@ class Timer {
     this.startDate = new Date();
     this.#seconds = 0;
     this.#state = STATES.running;
-    this.bar.command = "timer.stop";
     this.loop();
   }
 
@@ -101,13 +100,16 @@ class Timer {
       return;
     }
 
-    this.#seconds += 1;
     this.refreshBar();
+    this.#seconds += 1;
     setTimeout(() => this.loop(), 1000).unref();
   }
 
-  restart() {
-    this.#state = STATES.restart;
+  reset() {
+    this.#seconds = 0;
+    if (this.#state === STATES.idle) {
+      this.refreshBar();
+    }
   }
 
   elapsed() {
@@ -126,9 +128,30 @@ class Timer {
   refreshBar() {
     const { formatted, seconds } = this.elapsed();
 
-    this.bar.text = `${formatted} ${
-      this.#state === STATES.stop ? "Stopped" : "Elapsed"
-    }`;
+    if (this.#state === STATES.running) {
+      this.bar.command = "timer.stop";
+      this.bar.tooltip = "Stop";
+      this.bar.color = undefined;
+      this.bar.backgroundColor = undefined;
+      this.bar.text = `${formatted} Elapsed`;
+    }
+
+    if (this.#state === STATES.idle || this.#state === STATES.stop) {
+      this.bar.command = "timer.continue";
+      this.bar.tooltip = "Continue";
+      this.bar.color = new ThemeColor("statusBarItem.warningForeground");
+      this.bar.backgroundColor = new ThemeColor(
+        "statusBarItem.warningBackground",
+      );
+      this.bar.text = `${formatted} ${
+        this.#state === STATES.stop
+          ? "Stopped"
+          : this.#state === STATES.idle
+          ? "Idle"
+          : "Unknown"
+      }`;
+    }
+
     this.bar.show();
     if (seconds === 59) {
       this.write();

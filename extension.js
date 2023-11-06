@@ -37,7 +37,7 @@ function activate(context) {
   });
 
   const reset = vscode.commands.registerCommand("timer.reset", () => {
-    timer.restart();
+    timer.reset();
     vscode.window.showInformationMessage("Timer restarted sucessfully");
   });
 
